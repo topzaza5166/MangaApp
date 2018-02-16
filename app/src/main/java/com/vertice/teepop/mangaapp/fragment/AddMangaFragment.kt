@@ -2,7 +2,6 @@ package com.vertice.teepop.mangaapp.fragment
 
 import android.app.ProgressDialog
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.Fragment
@@ -13,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
@@ -22,12 +22,8 @@ import com.vertice.teepop.mangaapp.R
 import com.vertice.teepop.mangaapp.util.RecyclerItemClickListener
 import io.reactivex.Observable
 import io.reactivex.ObservableEmitter
-import io.reactivex.ObservableOnSubscribe
 import io.reactivex.Observer
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_add_new.*
 
 /**
@@ -92,61 +88,55 @@ class AddMangaFragment : Fragment() {
 
     private fun sendImageToFireBase() {
         val dialog = ProgressDialog(context).apply {
-            isIndeterminate = true
+            isIndeterminate = false
+            progress = 0
+            max = imageAdapter.uriList.size
+
             setCancelable(false)
+            setMessage("Please Wait")
         }
         dialog.show()
 
-        Observable.fromIterable(imageAdapter.uriList)
-                .flatMap({ uri ->
-                    Observable.create({ emitter: ObservableEmitter<String> ->
-                        imageRef.putFile(uri)
-                                .addOnFailureListener({ e ->
-                                    emitter.onError(e)
-                                })
-                                .addOnSuccessListener({ taskSnapshot ->
-                                    emitter.onNext(taskSnapshot.downloadUrl.toString())
-                                })
-                    })
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object : Observer<String?> {
-                    override fun onComplete() {
-                        Log.i(TAG, "Complete Upload")
-                        dialog.dismiss()
-                    }
 
-                    override fun onSubscribe(d: Disposable) {
-                        Log.i(TAG, "Uploading")
-                    }
+        val observable = Observable.create<String> { emitter: ObservableEmitter<String> ->
+            imageAdapter.uriList.forEach {
+                imageRef.putFile(it)
+                        .addOnFailureListener({ e ->
+                            emitter.onError(e)
+                        })
+                        .addOnSuccessListener({ taskSnapshot ->
+                            emitter.onNext(taskSnapshot.downloadUrl.toString())
 
-                    override fun onNext(url: String?) {
-                        Log.i(TAG, url)
-                    }
+                            if (it == imageAdapter.uriList.last())
+                                emitter.onComplete()
+                        })
+            }
+        }
 
-                    override fun onError(e: Throwable) {
-                        e.printStackTrace()
-                        dialog.dismiss()
-                    }
-                })
+        observable.subscribe(object : Observer<String?> {
+            override fun onComplete() {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
 
+            override fun onSubscribe(d: Disposable?) {
+                TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            }
 
-//        imageAdapter.uriList.forEach {
-//            imageRef.putFile(it)
-//                    .addOnFailureListener({ e ->
-//                        Toast.makeText(context, e.message, Toast.LENGTH_SHORT).show()
-//                        e.printStackTrace()
-//                        dialog.dismiss()
-//                    })
-//                    .addOnSuccessListener({ taskSnapshot ->
-//                        Log.i(TAG, taskSnapshot.downloadUrl.toString())
-//                        dialog.progress--
-//
-//                        if (dialog.progress == dialog.max)
-//                            dialog.dismiss()
-//                    })
-//        }
+            override fun onNext(t: String?) {
+                Log.i(TAG, t)
+                dialog.progress++
+
+                if (dialog.progress == dialog.max)
+                    dialog.dismiss()
+            }
+
+            override fun onError(e: Throwable?) {
+                Toast.makeText(context, e?.message, Toast.LENGTH_SHORT).show()
+                e?.printStackTrace()
+                dialog.dismiss()
+            }
+        })
+
     }
 
     private fun chooseImageCover() {
