@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1069943470222",
+    "firebase_url": "https://mangaappproject.firebaseio.com",
+    "project_id": "mangaappproject",
+    "storage_bucket": "mangaappproject.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1069943470222:android:89a10dee8149f3a0",
+        "android_client_info": {
+          "package_name": "com.vertice.teepop.mangaapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1069943470222-r85ehmuc5oakqqfb68u8ro01m5d3m3po.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCNMOAdSkddSPQLmRiqezVHTS3SFKc5_lU"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
